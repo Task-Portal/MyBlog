@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -20,8 +18,23 @@ namespace MyBlog.Controllers
         }
 
         // GET: Comments
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int? postId)
         {
+            if (postId != null)
+            {
+                var post = await _context.Posts.FirstOrDefaultAsync(p => p.Id == postId);
+
+                ViewBag.Post = post;
+
+                var comments = await _context.Comments
+                    .Include(c => c.ApplicationUser)
+                    .Include(c => c.Post)
+                    .Where(c => c.PostId == postId)
+                    .ToListAsync();
+
+                return View(comments);
+            }
+
             var applicationDbContext = _context.Comments.Include(c => c.Post);
             return View(await applicationDbContext.ToListAsync());
         }

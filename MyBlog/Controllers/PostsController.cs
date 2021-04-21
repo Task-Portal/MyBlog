@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -22,20 +23,20 @@ namespace MyBlog.Controllers
         }
 
         // GET: Posts
-        public async Task<IActionResult> Index(int pageNumber=1)
+        public async Task<IActionResult> Index(int pageNumber = 1)
         {
             var posts = _context.Posts;
 
-            int pageSize = 3;
-            int count = await posts.CountAsync();
+            var pageSize = 3;
+            var count = await posts.CountAsync();
             var items = await posts
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize).ToListAsync();
 
 
-            PageVM paginator = new PageVM(count, pageNumber, pageSize);
+            var paginator = new PageVM(count, pageNumber, pageSize);
 
-            PostVM viewModel = new PostVM
+            var viewModel = new PostVM
             {
                 Posts = items,
                 Paginator = paginator
@@ -72,20 +73,28 @@ namespace MyBlog.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Title,Description,Content,ImagePath,Id,PublishDate,PublishTime")] Post post, 
-            IFormFile imageFile )
+        public async Task<IActionResult> Create([Bind("Title,Description,Content,ImagePath,Id,PublishDate,PublishTime")]
+            Post post,
+            IFormFile imageFile)
         {
             if (ModelState.IsValid)
             {
                 //* File Upload: 
-                if (imageFile!=null)
+                if (imageFile != null)
                 {
-                    string name = imageFile.FileName;
-                    string path = 
+                    var name = imageFile.FileName;
+                    var path = $"/files/{name}";
+                    var serverPath = _env.WebRootPath + path;
+
+                    using var fs = new FileStream(serverPath, FileMode.Create, FileAccess.ReadWrite);
+
+                    await imageFile.CopyToAsync(fs);
+
+                    post.ImagePath = path;
                 }
 
 
-                _context.Posts.Add(post);  // context.Add
+                _context.Posts.Add(post); // context.Add
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
