@@ -15,6 +15,8 @@ namespace MyBlog.Controllers
     {
         private readonly ApplicationDbContext _context;
         private IWebHostEnvironment _env;
+        private readonly string[] permittedExtensions = {".jpg", ".jpeg", ".png", ".gif"};
+
 
         public PostsController(ApplicationDbContext context, IWebHostEnvironment hostEnvironment)
         {
@@ -75,27 +77,42 @@ namespace MyBlog.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Title,Description,Content,ImagePath,Id,PublishDate,PublishTime")]
             Post post,
-            IFormFile imageFile)
+            IFormFile uploadFile)
         {
             if (ModelState.IsValid)
             {
                 //* File Upload: 
-                if (imageFile != null)
+                if (uploadFile != null)
                 {
-                    var name = imageFile.FileName;
-                    var path = $"/files/{name}";
-                    var serverPath = _env.WebRootPath + path;
+                    var name = uploadFile.FileName;
 
-                    using var fs = new FileStream(serverPath, FileMode.Create, FileAccess.ReadWrite);
+                    var ext = Path.GetExtension(name).ToLowerInvariant();
 
-                    await imageFile.CopyToAsync(fs);
+                    if (permittedExtensions.Contains(ext))
+                    {
+                        var path = $"/files/{name}";
+                        var serverPath = _env.WebRootPath + path;
 
-                    post.ImagePath = path;
+                        using var fs = new FileStream(serverPath, FileMode.Create, FileAccess.ReadWrite);
+
+                        await uploadFile.CopyToAsync(fs);
+
+                        post.ImagePath = path;
+                        _context.Posts.Add(post); // context.Add
+                        await _context.SaveChangesAsync();
+                    }
+                    else
+                    {
+                        return RedirectToAction("ExtentionError", "Errors");
+                    }
+                }
+                else
+                {
+                    _context.Posts.Add(post); // context.Add
+                    await _context.SaveChangesAsync();
                 }
 
 
-                _context.Posts.Add(post); // context.Add
-                await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
             return View(post);

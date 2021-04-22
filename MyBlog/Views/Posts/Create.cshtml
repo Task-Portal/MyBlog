@@ -18,16 +18,17 @@
 <hr />
 <div class="row">
     <div class="col-md-4">
-        <form asp-action="Create">
+        @* enctype="multipart/form-data" для файлов *@
+        <form asp-action="Create" enctype="multipart/form-data">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
                 <label asp-for="Title" class="control-label"></label>
-                <input asp-for="Title" class="form-control" />
+                <input asp-for="Title" class="form-control"/>
                 <span asp-validation-for="Title" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="Description" class="control-label"></label>
-                <textarea asp-for="Description" class="form-control" rows="3"></textarea> 
+                <textarea asp-for="Description" class="form-control" rows="3"></textarea>
                 <span asp-validation-for="Description" class="text-danger"></span>
             </div>
             <div class="form-group">
@@ -37,21 +38,22 @@
             </div>
             <div class="form-group">
                 <label asp-for="ImagePath" class="control-label"></label>
-                <input  asp-for="ImagePath" class="form-control" type="file" />
+                @* name="uploadFile" added  *@
+                <input asp-for="ImagePath" class="form-control" type="file" name="uploadFile"/>
                 <span asp-validation-for="ImagePath" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="PublishDate" class="control-label"></label>
-                <input asp-for="PublishDate" class="form-control" />
+                <input asp-for="PublishDate" class="form-control"/>
                 <span asp-validation-for="PublishDate" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="PublishTime" class="control-label"></label>
-                <input asp-for="PublishTime" class="form-control" />
+                <input asp-for="PublishTime" class="form-control"/>
                 <span asp-validation-for="PublishTime" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
+                <input type="submit" value="Create" class="btn btn-primary"/>
             </div>
         </form>
     </div>
