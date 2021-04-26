@@ -68,6 +68,17 @@
 @* </table> *@
 
 
+<form method="get">
+    <div class="form-inline form-group">
+        <label class="control-label">Category</label> &nbsp;
+        <select name="categoryId" asp-items="Model.Categories" class="form-control mr-3">
+        </select>
+        &nbsp;
+        <input type="submit" value="Choose..." class="btn btn-primary" />
+    </div>
+</form>
+
+
 <div class="ui cards">
 
     @foreach (var item in Model.Posts)
@@ -79,9 +90,14 @@
         <div class="card">
             <div class="content">
 
-                <div class="header">
+                <div class="header left floated">
                     @Html.DisplayFor(modelItem => item.Title)
                 </div>
+                
+                <div class="meta right floated">
+                   Category:  @Html.DisplayFor(modelItem => item.Category.Name)
+                </div>
+
                 <div class="image">
                     <img class=" ui medium circular image " src="@Html.DisplayFor(modelItem => item.ImagePath)">
                 </div>

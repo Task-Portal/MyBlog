@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using MyBlog.Data;
 using MyBlog.Models;
@@ -25,23 +26,33 @@ namespace MyBlog.Controllers
         }
 
         // GET: Posts
-        public async Task<IActionResult> Index(int pageNumber = 1)
+        public async Task<IActionResult> Index(int? categoryId, int pageNumber = 1)
         {
-            var posts = _context.Posts;
+            // 1 Формирование коллекции выводимых постов:
+            var posts = _context.Posts.ToList();
+            if (categoryId != null && categoryId != 0) posts = posts.Where(x => x.CategoryId == categoryId).ToList();
 
+
+            // 2Разбивка коллекции постов на страницы пагинации
             var pageSize = 3;
-            var count = await posts.CountAsync();
-            var items = await posts
+            var count = posts.Count();
+            var items = posts
                 .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize).ToListAsync();
+                .Take(pageSize).ToList();
 
-
+            //3Создание пагинатора
             var paginator = new PageVM(count, pageNumber, pageSize);
 
+            //4  Формарование коллекции категорий
+            var categories = _context.Categories.ToList();
+            categories.Insert(0, new Category {Id = 0, Name = "All categories"});
+
+            // 5 Создание модели представления постов
             var viewModel = new PostVM
             {
                 Posts = items,
-                Paginator = paginator
+                Paginator = paginator,
+                Categories = new SelectList(categories, "Id", "Name")
             };
             return View(viewModel);
         }
@@ -67,6 +78,8 @@ namespace MyBlog.Controllers
         // GET: Posts/Create
         public IActionResult Create()
         {
+            var categories = _context.Categories.ToList();
+            ViewData["Categoryid"] = new SelectList(categories, "Id", "Name");
             return View();
         }
 
@@ -75,7 +88,8 @@ namespace MyBlog.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Title,Description,Content,ImagePath,Id,PublishDate,PublishTime")]
+        public async Task<IActionResult> Create(
+            [Bind("Title,Description,Content,ImagePath,Id,PublishDate,PublishTime,CategoryId")]
             Post post,
             IFormFile uploadFile)
         {
@@ -111,6 +125,9 @@ namespace MyBlog.Controllers
 
                     return RedirectToAction(nameof(Index));
             }
+
+            var categories = _context.Categories.ToList();
+            ViewData["categoryId"] = new SelectList(categories, "Id", "Name", post.CategoryId);
             return View(post);
         }
 
