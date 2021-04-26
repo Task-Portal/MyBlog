@@ -98,22 +98,18 @@ namespace MyBlog.Controllers
                         await uploadFile.CopyToAsync(fs);
 
                         post.ImagePath = path;
-                        _context.Posts.Add(post); // context.Add
-                        await _context.SaveChangesAsync();
                     }
                     else
                     {
                         return RedirectToAction("ExtentionError", "Errors");
                     }
                 }
-                else
-                {
-                    _context.Posts.Add(post); // context.Add
+
+                _context.Posts.Add(post); // context.Add
                     await _context.SaveChangesAsync();
-                }
 
 
-                return RedirectToAction(nameof(Index));
+                    return RedirectToAction(nameof(Index));
             }
             return View(post);
         }
@@ -139,7 +135,10 @@ namespace MyBlog.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Title,Description,Content,ImagePath,Id,PublishDate,PublishTime")] Post post)
+        public async Task<IActionResult> Edit(int id,
+            [Bind("Title,Description,Content,ImagePath,Id,PublishDate,PublishTime")]
+            Post post
+            , IFormFile uploadFile)
         {
             if (id != post.Id)
             {
