@@ -1,5 +1,7 @@
 ﻿@model MyBlog.ViewModels.PostVM
 
+@addTagHelper *,  MyBlog
+
 @{
     ViewData["Title"] = "Posts";
     Layout = "~/Views/Shared/_Layout.cshtml";
@@ -7,88 +9,137 @@
 
 <!DOCTYPE html>
 
-<html>
+
 <head>
-    <meta name="viewport" content="width=device-width"/>
+    <meta name="viewport" content="width=device-width" />
     <title>My Personal Blog</title>
 </head>
-<body>
-    @if (User.Identity.Name == "a@a.com")
+
+@if (User.Identity.Name == "a@a.com")
+{
+    <p>
+        <a asp-action="Create">Create New Post</a>
+    </p>
+}
+
+@* <table class="table"> *@
+@*     <thead> *@
+@*         <tr> *@
+@* *@
+@*             <th> Title </th> *@
+@*             <th> Description </th> *@
+@*             <th> Content </th> *@
+@*             <th> ImagePath </th> *@
+@*             <th> PublishDate </th> *@
+@*             <th> PublishTime </th> *@
+@*             <th></th> *@
+@*         </tr> *@
+@*     </thead> *@
+@*     <tbody> *@
+@*         @foreach (var item in Model.Posts) *@
+@*         { *@
+@*             <tr> *@
+@*                 <td> *@
+@*                     @Html.DisplayFor(modelItem => item.Title) *@
+@*                 </td> *@
+@*                 <td> *@
+@*                     @Html.DisplayFor(modelItem => item.Description) *@
+@*                 </td> *@
+@*                 <td> *@
+@*                     @Html.DisplayFor(modelItem => item.Content) *@
+@*                 </td> *@
+@*                 <td> *@
+@*                     @Html.DisplayFor(modelItem => item.ImagePath) *@
+@*                 </td> *@
+@*                 <td> *@
+@*                     @Html.DisplayFor(modelItem => item.PublishDate) *@
+@*                 </td> *@
+@*                 <td> *@
+@*                     @Html.DisplayFor(modelItem => item.PublishTime) *@
+@*                 </td> *@
+@*                 <td> *@
+@*                     <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> | *@
+@*                     <a asp-action="Details" asp-route-id="@item.Id">Details</a> | *@
+@*                     <a asp-action="Delete" asp-route-id="@item.Id">Delete</a> *@
+@*                 </td> *@
+@*             </tr> *@
+@*         } *@
+@*     </tbody> *@
+@* </table> *@
+
+
+<form method="get">
+    <div class="form-inline form-group">
+        <label class="control-label">Category</label> &nbsp;
+        <select name="categoryId" asp-items="Model.Categories" class="form-control mr-3">
+        </select>
+        &nbsp;
+        <input type="submit" value="Choose..." class="btn btn-primary" />
+    </div>
+</form>
+
+
+<div class="ui cards">
+
+    @foreach (var item in Model.Posts)
     {
-        <p>
-            <a asp-action="Create">Create New Post</a>
-        </p>
-    }
-
-    <table class="table">
-        <thead>
-            <tr>
-
-                <th> Title </th>
-                <th> Description </th>
-                <th> Content </th>
-                <th> ImagePath </th>
-                <th> PublishDate </th>
-                <th> PublishTime </th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in Model.Posts)
-            {
-                <tr>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.Title)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.Description)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.Content)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.ImagePath)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.PublishDate)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.PublishTime)
-                    </td>
-                    <td>
-                        <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                        <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                        <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
 
 
 
-    @*Paginator*@
 
-    @if (Model.Paginator.HasPreviousPage)
-    {
-<a asp-action="Index"
-   asp-route-pageNumber="@(Model.Paginator.PageNumber - 1)"
-   class="btn btn-dark">
-    <i class="glyficon glyficon-chevron-left"></i>
-    @(Model.Paginator.PageNumber - 1)  Previous Page
-</a>
-    }
+        <div class="card">
+            <div class="content">
 
-    @if (Model.Paginator.HasNextpage)
-    {
-<a asp-action="Index"
-   asp-route-pageNumber="@(Model.Paginator.PageNumber + 1)"
-   class="btn btn-dark">
-    <i class="glyficon glyficon-chevron-right"></i>
-    Next Page @(Model.Paginator.PageNumber + 1)
-</a>
+                <div class="header left floated">
+                    @Html.DisplayFor(modelItem => item.Title)
+                </div>
+                
+                <div class="meta right floated">
+                   Category:  @Html.DisplayFor(modelItem => item.Category.Name)
+                </div>
+
+                <div class="image">
+                    <img class=" ui medium circular image " src="@Html.DisplayFor(modelItem => item.ImagePath)">
+                </div>
+                <div class="meta">
+                    <p class="right floated">Date:  @Html.DisplayFor(modelItem => item.PublishDate)</p>
+                    <p class="left floated">Time:   @Html.DisplayFor(modelItem => item.PublishTime)</p>
+                </div>
+                <div class="description">
+                    @Html.DisplayFor(modelItem => item.Content)
 
 
-    }
-</body>
-</html>
+                    <b> @Html.DisplayFor(modelItem => item.Description) </b>
+                </div>
+
+            </div>
+            <div class="extra content">
+                <div class="ui three buttons">
+                    <a class="ui basic green  button" asp-action="Edit" asp-route-id="@item.Id">Edit</a>
+
+                    <a class="ui basic green  button" asp-action="Details" asp-route-id="@item.Id">Details</a>
+                    <a class="ui basic red  button" asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+
+                </div>
+            </div>
+
+            <div class="extra content">
+
+
+                <a class="ui fluid green  button" asp-action="Index" asp-route-id="@item.Id"
+                   asp-controller="Comments">Add a comment...</a>
+
+
+            </div>
+        </div>
+
+   
+
+}
+</div>
+    <br />
+<br />
+
+
+@*Paginator*@
+<page-link page-model="Model.Paginator" page-action="Index"></page-link>
