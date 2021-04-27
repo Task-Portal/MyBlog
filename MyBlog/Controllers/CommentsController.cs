@@ -1,4 +1,6 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -18,18 +20,18 @@ namespace MyBlog.Controllers
         }
 
         // GET: Comments
-        public async Task<IActionResult> Index(int? postId)
+        public async Task<IActionResult> Index(int? id)
         {
-            if (postId != null)
+            if (id != null)
             {
-                var post = await _context.Posts.FirstOrDefaultAsync(p => p.Id == postId);
+                var post = await _context.Posts.FirstOrDefaultAsync(p => p.Id == id);
 
                 ViewBag.Post = post;
 
                 var comments = await _context.Comments
                     .Include(c => c.ApplicationUser)
                     .Include(c => c.Post)
-                    .Where(c => c.PostId == postId)
+                    .Where(c => c.PostId == id)
                     .ToListAsync();
 
                 return View(comments);
@@ -59,9 +61,10 @@ namespace MyBlog.Controllers
         }
 
         // GET: Comments/Create
-        public IActionResult Create()
+        public async Task<IActionResult> Create(int? id)
         {
-            ViewData["PostId"] = new SelectList(_context.Posts, "Id", "Content");
+            var post = await _context.Posts.FirstOrDefaultAsync(p => p.Id == id);
+            ViewBag.Post = post;
             return View();
         }
 
@@ -70,10 +73,16 @@ namespace MyBlog.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Content,PostId,ApplicationUserId,Id,PublishDate,PublishTime")] Comment comment)
+        public async Task<IActionResult> Create([Bind("Content,Id,PublishDate,PublishTime")]
+            Comment comment)
         {
             if (ModelState.IsValid)
             {
+                var userId = Convert.ToInt32(User.FindFirstValue(ClaimTypes.NameIdentifier));
+                comment.ApplicationUserId = userId;
+
+
+                comment.PostId = 1;
                 _context.Add(comment);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
