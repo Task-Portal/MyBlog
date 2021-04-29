@@ -15,7 +15,7 @@
     <title>My Personal Blog</title>
 </head>
 
-@if (User.Identity.Name == "a@a.com")
+@if (User.IsInRole("SuperAdmin"))
 {
     <p>
         <a asp-action="Create">Create New Post</a>
@@ -95,7 +95,7 @@
                 </div>
                 
                 <div class="meta right floated">
-                   Category:  @Html.DisplayFor(modelItem => item.Category.Name)
+                    Category:  @Html.DisplayFor(modelItem => item.Category.Name)
                 </div>
 
                 <div class="image">
@@ -113,23 +113,29 @@
                 </div>
 
             </div>
+            @if (User.IsInRole("SuperAdmin"))
+            {
+
+         
             <div class="extra content">
-                <div class="ui three buttons">
+                <div class="ui two buttons">
                     <a class="ui basic green  button" asp-action="Edit" asp-route-id="@item.Id">Edit</a>
 
-                    <a class="ui basic green  button" asp-action="Details" asp-route-id="@item.Id">Details</a>
+                  
                     <a class="ui basic red  button" asp-action="Delete" asp-route-id="@item.Id">Delete</a>
 
                 </div>
             </div>
+            }
 
             <div class="extra content">
 
+                <div class="ui two buttons">
+                    <a class="ui basic green  button" asp-action="Index" asp-route-id="@item.Id"
+                       asp-controller="Comments">Add a comment...</a>
+                    <a class="ui basic green  button" asp-action="Details" asp-route-id="@item.Id">Details</a>
 
-                <a class="ui fluid green  button" asp-action="Index" asp-route-id="@item.Id"
-                   asp-controller="Comments">Add a comment...</a>
-
-
+                </div>
             </div>
         </div>
 
