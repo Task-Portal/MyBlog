@@ -1,7 +1,6 @@
-﻿using System;
-using System.Linq;
-using System.Security.Claims;
+﻿using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -61,9 +60,10 @@ namespace MyBlog.Controllers
         }
 
         // GET: Comments/Create
-        public async Task<IActionResult> Create(int? id)
+        [Authorize]
+        public IActionResult Create(int? postId)
         {
-            var post = await _context.Posts.FirstOrDefaultAsync(p => p.Id == id);
+            var post = _context.Posts.FirstOrDefault(p => p.Id == postId);
             ViewBag.Post = post;
             return View();
         }
@@ -73,25 +73,25 @@ namespace MyBlog.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Content,Id,PublishDate,PublishTime")]
+        public async Task<IActionResult> Create(
+            [Bind("Id,Content,PublishDate,PublishTime,PostId,ApplicationUserId,ApplicationUserName")]
             Comment comment)
         {
             if (ModelState.IsValid)
             {
-                var userId = Convert.ToInt32(User.FindFirstValue(ClaimTypes.NameIdentifier));
-                comment.ApplicationUserId = userId;
-
-
-                comment.PostId = 1;
+                var user = await _context.Users.Where(u => u.UserName == User.Identity.Name)
+                    .FirstOrDefaultAsync();
+                comment.ApplicationUserId = user.Id;
                 _context.Add(comment);
                 await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction(nameof(Index), new {id = comment.PostId});
             }
-            ViewData["PostId"] = new SelectList(_context.Posts, "Id", "Content", comment.PostId);
+
             return View(comment);
         }
 
         // GET: Comments/Edit/5
+        [Authorize]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -100,12 +100,19 @@ namespace MyBlog.Controllers
             }
 
             var comment = await _context.Comments.FindAsync(id);
+
             if (comment == null)
             {
                 return NotFound();
             }
-            ViewData["PostId"] = new SelectList(_context.Posts, "Id", "Content", comment.PostId);
-            return View(comment);
+
+            if (comment.ApplicationUserName==User.Identity.Name)
+            {
+                
+                return View(comment);
+            }
+
+            return Redirect("Identity/Account/AccessDenied");
         }
 
         // POST: Comments/Edit/5
@@ -171,7 +178,7 @@ namespace MyBlog.Controllers
             var comment = await _context.Comments.FindAsync(id);
             _context.Comments.Remove(comment);
             await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(nameof(Index), new {id = comment.PostId});
         }
 
         private bool CommentExists(int id)

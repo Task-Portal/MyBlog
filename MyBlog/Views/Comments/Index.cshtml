@@ -1,21 +1,18 @@
 ﻿@model IEnumerable<MyBlog.Models.Comment>
+
 @{
     ViewData["Title"] = "Comments";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<!DOCTYPE html>
-
-
-
-    <p>
-        <a asp-action="Create" asp-route-id="@ViewBag.Post.Id">Create New</a>
-    </p>
-
 <h2>Comments</h2>
-<h5>Post: </h5>
+<h5>Post: @ViewBag.Post.Title</h5>
 
-
+@if(User.Identity.IsAuthenticated){
+    <p>
+        <a asp-action="Create" asp-route-postId="@ViewBag.Post.Id">Create New</a>
+    </p>
+}
 <div class="ui  cards">
 
     @foreach (var item in Model)
@@ -25,30 +22,42 @@
         <div class="comment card">
           
             <div class="content ">
-                <a class="avatar">User Id: @Html.DisplayFor(modelItem => item.ApplicationUserId)</a>
+                <a class="avatar">User Name: @Html.DisplayFor(modelItem => item.ApplicationUserName)</a>
                 <div class="metadata">
                     <div class="date">Date:  @Html.DisplayFor(modelItem => item.PublishDate)</div>
-                
+
                     <div class="author">
                         Time:    @Html.DisplayFor(modelItem => item.PublishTime)
-                        
-                      
+
+
 
                     </div>
                     <br />
                     <div class="metadata">
-                        <b>Post Content: @Html.DisplayFor(modelItem => item.Post.Content)</b>
+                        <b>Post Number: @Html.DisplayFor(modelItem => item.Post.Content)</b>
                     </div>
+               
                 </div>
-                <div class="comment"> Content:
+                
+                <div class="comment">
+                  
+                    Content:
                     @Html.DisplayFor(modelItem => item.Content)
                 </div>
-                <div class="actions">
-                    <a class="reply" asp-action="Edit" asp-route-id="@item.Id">Edit</a>
-                    <a class="save" asp-action="Details" asp-route-id="@item.Id">Details</a>
-                    <a class="hide" asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-                   
+                <div class="extra content actions">
+                    <div class="ui three buttons">
+                        
+                        <a class="ui basic green  button" asp-action="Details" asp-route-id="@item.Id">Details</a>
+                        @if(User.Identity.Name==item.ApplicationUserName
+                            || User.IsInRole("SuperAdmin")
+                            ){
+                        <a class="ui basic green  button" asp-action="Edit" asp-route-id="@item.Id">Edit</a>
+
+                            <a class="ui basic red  button" asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                        }
+                    </div>
                 </div>
+             
             </div>
         </div>
     }
